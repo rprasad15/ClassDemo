@@ -86,31 +86,58 @@ public partial class SamplePages_ManagePlaylist : System.Web.UI.Page
             //put out an erro message
             //this form uses a User control called MessageUserControl
             //The user control will be the mechanism to display messages on this form
-            MessageUserControl.ShowInfo("Warning", "Play List Name is required");
+            MessageUserControl.ShowInfo("Warning", "Play List Name is required"); //Show info just puts out a message, there is also a bootstrap version as well
         }
-        else
+        else //If we had something
         {
+            string username = User.Identity.Name; //Underneath the user class, find the identity, and then take out Name
+
             //Message User control has the try/catch coding embedded in the control
             MessageUserControl.TryRun(() => 
             {
                 //this is the process coding bloack to be executed under the "watchful eye" of the MessagefeUserControl
 
                 //obtain the user name from the security part of the application
-                string username = User.Identity.Name;
+
                 PlaylistTracksController sysmgr = new PlaylistTracksController();
                 List<UserPlaylistTrack> playlist = sysmgr.List_TracksForPlaylist(PlaylistName.Text, username);
                 PlayList.DataSource = playlist;
                 PlayList.DataBind();
-            });
+            },"","Here is your current playlist.");
         }
     }
 
-    protected void TracksSelectionList_ItemCommand(object sender, 
+    protected void TracksSelectionList_ItemCommand(object sender,
         ListViewCommandEventArgs e)
     {
         //code to go here
-    }
+        //ListViewCommandEventArgs paramenters e contains  the CommandArg value
+        if (string.IsNullOrEmpty(PlaylistName.Text))
+        {
+            MessageUserControl.ShowInfo("Warning", "Playlist Name is required.");
+        }
+        else //If we had something
+        {
+            string username = User.Identity.Name; //Underneath the user class, find the identity, and then take out Name
 
+            //Trackid is going to come from e.CommandArguement
+            //e.CommandArguement is an object therefore convery to string
+
+            int trackid = int.Parse(e.CommandArgument.ToString());
+
+
+            //the following code calls a BLL method to add to the database
+            MessageUserControl.TryRun(() =>
+            {
+                PlaylistTracksController sysmgr = new PlaylistTracksController();
+                List<UserPlaylistTrack> refreshresults = sysmgr.Add_TrackToPLaylist(PlaylistName.Text, username, trackid);
+                PlayList.DataSource = refreshresults;
+                PlayList.DataBind();
+
+
+            }, "Sucess", "Track added tp play list");
+        }
+    }
     protected void MoveUp_Click(object sender, EventArgs e)
     {
         //code to go here
