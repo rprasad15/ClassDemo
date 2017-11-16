@@ -22,6 +22,27 @@ namespace ChinookSystem.BLL
         {
             using (var context = new ChinookContext())
             {
+                //using an inline if
+                //results = from x in context.Tracks
+                //          orderby x.Name
+                //          where tracksby.Equals("Artist") ? x.Album.ArtistId == argid :
+                //          tracksby.Equals("MediaType") ? x.MediaType == argid :
+                //          tracksbyEquals("Genre") ? x.GenreId == argid :
+                //          x.AlbumID == argid
+                //          select new TrackList
+                //          {
+                //              TrackID = x.TrackId,
+                //              Name = x.Name,
+                //              Title = x.Album.Title,
+                //              MediaName = x.MediaType.Name,
+                //              GenreName = x.Genre.Name,
+                //              Composer = x.Composer,
+                //              Milliseconds = x.Milliseconds,
+                //              Bytes = x.Bytes,
+                //              UnitPrice = x.UnitPrice
+                //          };
+
+
                 IEnumerable<TrackList> results = null;
 
                //code to go here
@@ -109,6 +130,24 @@ namespace ChinookSystem.BLL
             }
         }//eom
 
+        [DataObjectMethod(DataObjectMethodType.Select,false)]
+        public List<GenreAlbumReport> GenreAlbumReport_Get()
+        {
+            using (var context = new ChinookContext())
+            {
+                var results = from x in context.Tracks
+                              select new GenreAlbumReport
+                              {
+                                  GenreName = x.Genre.Name,
+                                  AlbumTitle = x.Album.Title,
+                                  TrackName = x.Name,
+                                  Milliseconds = x.Milliseconds,
+                                  Bytes = x.Bytes,
+                                  UnitPrice = x.UnitPrice
+                              };
+                return results.ToList();
+            }
+        }
        
     }//eoc
 }
