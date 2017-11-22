@@ -23,6 +23,10 @@ public partial class SamplePages_ManagePlaylist : System.Web.UI.Page
             TracksSelectionList.DataSource = null;
         }
     }
+    //Need roles questions for securty testing
+
+
+
 
     protected void CheckForException(object sender, ObjectDataSourceStatusEventArgs e)
     {
@@ -287,5 +291,49 @@ public partial class SamplePages_ManagePlaylist : System.Web.UI.Page
     protected void DeleteTrack_Click(object sender, EventArgs e)
     {
         //code to go here
+        if(PlayList.Rows.Count == 0)
+        {
+            MessageUserControl.ShowInfo("Warning", "No playlsit has been retrieved");
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(PlaylistName.Text))
+            {
+                MessageUserControl.ShowInfo("Warning", "No play list has been entered");
+            }
+            else
+            {
+                //collect the selected tracks to delete
+                List<int> TracksToDelete = new List<int>();
+                int selectedrows = 0;
+                CheckBox playlistselection = null;
+                for(int i = 0; i < PlayList.Rows.Count; i++)
+                {
+                    playlistselection = PlayList.Rows
+                        [i].FindControl("Selected") as CheckBox;
+                    if (playlistselection.Checked)
+                    {
+                        TracksToDelete.Add(int.Parse((PlayList.Rows[i].FindControl("TrackId") as Label).Text));
+                        selectedrows++;
+                    }
+                }
+                if(selectedrows == 0)
+                {
+                    MessageUserControl.ShowInfo("Information", "No playlist tracks has been selected.");
+                }
+                else
+                {
+                    //at this point you have your required data
+                    //send to BLL for processing
+                    MessageUserControl.TryRun(() =>
+                    {
+                        PlaylistTracksController sysmgr = new PlaylistTracksController();
+                        List<UserPlaylistTrack> playlistdata = sysmgr.DeleteTracks(User.Identity.Name, PlaylistName.Text, TracksToDelete);
+                        PlayList.DataSource = playlistdata;
+                        PlayList.DataBind();
+                    }, "Removed", "Tracks have been removed");
+                }
+            }
+        }
     }
 }
